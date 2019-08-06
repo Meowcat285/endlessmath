@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Barlow:400,400i,500,600,600i,700,700i,800,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <title>endless math</title>
+</head>
+<style>
+*{
+    font-family: 'Barlow', sans-serif;
+}
+body{
+    color: #fff;
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
+}
+h1,h2,h3,h4,h5,h6,p{
+    margin: 0px;
+}
+#menu{
+    background-color: #0067ff;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    cursor: pointer;
+}
+#menu-background{
+
+}
+#menu-title{
+    font-size: 70px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 40px;
+    line-height: 60px;
+
+    animation: float 5s ease-in-out infinite;
+}
+#menu-instructions{
+    font-size: 20px;
+    font-weight: 400;
+
+    animation: float 5s ease-in-out 1s infinite;
+}
+#menu-content{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+}
+.key{
+    padding: 3px 8px;
+    margin: 0px 3px;
+    background-color: #fff;
+    color: #000;
+    font-weight: 900;
+    border-radius: 5px;
+}
+#blackcover{
+    background-color: #001433;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 1000;
+}
+#game{
+    background-color: #0067ff;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 500;
+    display: none;
+}
+#game-content{
+    position: fixed;
+    top: 50%;
+    left: 0px;
+    width: 100%;
+    transform: translateY(-50%);
+}
+#question{
+    font-size: 70px;
+    font-weight: 700;
+    word-wrap: break-word;
+    margin-bottom: 0px;
+    margin-top: 80px;
+
+    animation: float 4s ease-in-out infinite;
+}
+.answer{
+    padding: 5px 20px;
+    margin: 0px 10px 80px 10px;
+    font-size: 50px;
+    display: inline-block;
+    background-color: #fff;
+    color: #000;
+    border-radius: 5px;
+    position: relative;
+    border: 0px solid #fff;
+    cursor: pointer;
+
+    animation: float 5s ease-in-out infinite;
+}
+.answer > .key{
+    position: absolute;
+    font-size: 30px;
+    top: -65px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 3px 17px;
+}
+@keyframes float{
+    0%{
+        transform: translateY(-10px) rotate(1deg);
+    }
+    50%{
+        transform: translateY(10px) rotate(-1deg);
+    }
+    100%{
+        transform: translateY(-10px) rotate(1deg);
+    }
+}
+</style>
+<body>
+    <iframe src="./silence.mp3" allow="autoplay" style="display:none;"></iframe>
+    <div id="blackcover"></div>
+    <div id="menu">
+        <audio id="menu-music" loop>
+            <source src="./menu.wav" />
+        </audio>
+        <div id="menu-background"></div>
+        <div id="menu-content">
+            <div id="menu-title">endless math</div>
+            <div id="menu-instructions">press <span class="key">ENTER</span> to play</div>
+        </div>
+    </div>
+    <div id="game">
+        <audio id="answering-music" loop>
+            <source src="./answering.wav" />
+        </audio>
+        <audio id="reading-music" loop>
+            <source src="./reading.wav" />
+        </audio>
+        <audio id="incorrect-audio">
+            <source src="./incorrect.wav" />
+        </audio>
+        <audio id="correct-audio">
+            <source src="./correct.wav" />
+        </audio>
+        <div id="game-content">
+            <div id="question">question</div>
+            <div class="answer" style="animation-delay: 0s;"><div class="key">1</div><div class="answer-num"></div></div>
+            <div class="answer" style="animation-delay: 0.5s;"><div class="key">2</div><div class="answer-num"></div></div>
+            <div class="answer" style="animation-delay: 1s;"><div class="key">3</div><div class="answer-num"></div></div>
+            <div class="answer" style="animation-delay: 1.5s;"><div class="key">4</div><div class="answer-num"></div></div>
+        </div>
+    </div>
+</body>
+<script>
+var kca = [];
+
+var cc1 = "#090";
+var cc2 = "#060";
+
+var cw1 = "#c00";
+var cw2 = "#900";
+
+var mobile = false;
+
+$(document).ready(function(){
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        mobile = true;
+        $("#menu-instructions").html(`<span class="key">TAP ANYWHERE</span> to play`);
+        $(".answer > .key").hide();
+    }
+    setTimeout(function(){
+        $("#blackcover").fadeOut(500);
+        document.querySelector("#menu-music").play();
+        addKC(13, function(){
+            rKC(13);
+            $("#menu-music").animate({volume: 0}, 500);
+            $("#incorrect-audio").animate({volume: 0.3}, 0);
+            qf();
+        });
+        document.querySelector("#menu").onclick = function(){
+            rKC(13);
+            $("#menu-music").animate({volume: 0}, 500);
+            $("#incorrect-audio").animate({volume: 0.3}, 0);
+            qf();
+        };
+    }, 1000);
+    $(document).keypress(function(e){
+        var c = e.which || e.keyCode;
+        console.log(c);
+        kca.forEach(function(kcac){
+            if (c == kcac.code) {
+                kcac.action();
+            }
+        });
+    });
+});
+var answering = false;
+function qf(){
+    $("#blackcover").fadeIn(500);
+    setTimeout(function(){
+        $("#menu").hide();
+        $("#game").show();
+        var q = getAddition();
+        console.log(q);
+        if (mobile == false) {
+            $(".answer > .key").show();
+        }
+        if (mobile == false) {
+            $(".answer").css({color: "#000", backgroundColor: "#fff", opacity: 0, marginBottom: "130px"});
+            $("#question").css({marginBottom: "-100px", marginTop: "80px"});
+        } else {
+            $(".answer").css({color: "#000", backgroundColor: "#fff", opacity: 0, marginBottom: "20px"});
+            $("#question").css({marginTop: "0px", marginBottom: "-100px"});
+        }
+        $("#question").html(q.str);
+        $(`.answer:nth-of-type(${2}) > .answer-num`).html(q.ds.d1);
+        $(`.answer:nth-of-type(${3}) > .answer-num`).html(q.ds.d2);
+        $(`.answer:nth-of-type(${4}) > .answer-num`).html(q.ds.d3);
+        $(`.answer:nth-of-type(${5}) > .answer-num`).html(q.ds.d4);
+        document.querySelector("#reading-music").play();
+        tts(`${q.f1} plus ${q.f2}`, 1, function(){
+            if (mobile == true) {
+                $("#question").animate({marginBottom: "10px"}, 500);
+            } else {
+                $("#question").animate({marginBottom: "80px"}, 500);
+            }
+            setTimeout(function(){
+                $(".answer").animate({opacity: 1}, 500);
+                answering = true;
+                tts(`${q.ds.d1}, ${q.ds.d2}, ${q.ds.d3}, or ${q.ds.d4}`, 1, function(){
+                    /* if (answering == true) {
+                        document.querySelector("#reading-music").pause();
+                        document.querySelector("#answering-music").currentTime = document.querySelector("#reading-music").currentTime;
+                        document.querySelector("#answering-music").play();
+                        document.querySelector("#reading-music").currentTime = 0;
+                    } */
+                });
+                addKC(49, function(){
+                    avf(2, q.cnum == 1, q.ds.d1, q.correct, q.cnum+1);
+                });
+                addKC(50, function(){
+                    avf(3, q.cnum == 2, q.ds.d2, q.correct, q.cnum+1);
+                });
+                addKC(51, function(){
+                    avf(4, q.cnum == 3, q.ds.d3, q.correct, q.cnum+1);
+                });
+                addKC(52, function(){
+                    avf(5, q.cnum == 4, q.ds.d4, q.correct, q.cnum+1);
+                });
+                for (var v = 0; v < 4; v++) {
+                    document.querySelector(`.answer:nth-of-type(${v+2})`).onclick = (function(v){
+                        return function(){
+                            console.log(v);
+                            avf(v+2, q.cnum == v+1, q.ds[`d${v+1}`], q.correct, q.cnum+1);
+                        };
+                    })(v);
+                }
+            }, 500);
+        });
+        $("#blackcover").fadeOut(500);
+    }, 1000);
+}
+function addKC(code, action){
+    var x = 0;
+    var f = false;
+    kca.forEach(function(kcac){
+        if (kcac.code == code) {
+            kca[x] = {code, action};
+            f = true;
+        }
+        x++;
+    });
+    if (f == false) {
+        kca.push({code, action});
+    }
+}
+function rKC(code){
+    var x = 0;
+    kca.forEach(function(kcac){
+        if (kcac.code == code) {
+            kca.splice(x, 1);
+        }
+        x++;
+    });
+}
+function getAddition(){
+    var f1 = Rnd(20, 100);
+    var f2 = Rnd(20, 100);
+    var correct = f1 + f2;
+    var str = `${f1}&nbsp;&plus;&nbsp;${f2}`;
+    var d1 = correct+5;
+    var d2 = correct-5;
+    var d3 = correct+10;
+    var d4 = correct-10;
+    var ds = {d1, d2, d3, d4};
+    var cnum = Rnd(1, 4);
+    ds[`d${cnum}`] = correct;
+    return {f1, f2, correct, str, ds, cnum};
+}
+function Rnd(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function avf(num, correct, text, correctanswer, correctpos){
+    answering = false;
+    rKC(49);
+    rKC(50);
+    rKC(51);
+    rKC(52);
+    for (var v = 0; v < 4; v++) {
+        document.querySelector(`.answer:nth-of-type(${v+2})`).onclick = function(){
+            
+        };
+    }
+    document.querySelector("#reading-music").pause();
+    document.querySelector("#reading-music").currentTime = 0;
+    document.querySelector("#answering-music").pause();
+    document.querySelector("#answering-music").currentTime = 0;
+    $(".answer > .key").fadeOut(1000);
+    $("#question").animate({marginBottom: "10px", marginTop: "20px"}, {duration: 1000, queue: false});
+    $(".answer").animate({marginBottom: "20px"}, {duration: 1000, queue: false});
+    var ccc1 = cc1;
+    var ccc2 = cc2;
+    if (correct == false) {
+        ccc1 = cw1;
+        ccc2 = cw2;
+        document.querySelector("#incorrect-audio").play();
+        tts(`${text} is incorrect. The correct answer was ${correctanswer}.`, 1, function(){
+            document.querySelector("#correct-audio").play();
+            $(`.answer:nth-of-type(${correctpos})`).animate({backgroundColor: cc1, color: "#fff"}, 100);
+            $(`.answer:nth-of-type(${correctpos})`).animate({backgroundColor: cc1}, 100);
+            $(`.answer:nth-of-type(${correctpos})`).animate({backgroundColor: cc2}, 100);
+            $(`.answer:nth-of-type(${correctpos})`).animate({backgroundColor: cc1}, 100);
+            $(`.answer:nth-of-type(${correctpos})`).animate({backgroundColor: cc2}, 100);
+            $(`.answer:nth-of-type(${correctpos})`).animate({backgroundColor: cc1}, 100);
+            setTimeout(function(){
+                qf();
+            }, 1600);
+        });
+    } else {
+        document.querySelector("#correct-audio").play();
+        tts(`${text} is the correct answer.`, 1, function(){
+            qf();
+        });
+    }
+    $(`.answer:nth-of-type(${num})`).animate({backgroundColor: ccc1, color: "#fff"}, 100);
+    $(`.answer:nth-of-type(${num})`).animate({backgroundColor: ccc1}, 100);
+    $(`.answer:nth-of-type(${num})`).animate({backgroundColor: ccc2}, 100);
+    $(`.answer:nth-of-type(${num})`).animate({backgroundColor: ccc1}, 100);
+    $(`.answer:nth-of-type(${num})`).animate({backgroundColor: ccc2}, 100);
+    $(`.answer:nth-of-type(${num})`).animate({backgroundColor: ccc1}, 100);
+}
+var sayTimeout;
+function tts(text, pitch, callback) {
+    if (speechSynthesis.speaking) {
+        // SpeechSyn is currently speaking, cancel the current utterance(s)
+        speechSynthesis.cancel();
+
+        // Make sure we don't create more than one timeout...
+        if (sayTimeout !== null)
+            clearTimeout(sayTimeout);
+
+        sayTimeout = setTimeout(function () { tts(text, pitch, callback); }, 250);
+    }
+    else {
+        // Good to go
+        var message = new SpeechSynthesisUtterance(text);
+        message.lang = "en-US";
+        message.voice = window.speechSynthesis.getVoices()[0];
+        if (pitch) {
+            message.pitch = pitch;
+        }
+        if (callback) {
+            message.onend = callback;
+        }
+        speechSynthesis.speak(message);
+    }
+}
+</script>
+</html>
