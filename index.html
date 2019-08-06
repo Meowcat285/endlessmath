@@ -370,7 +370,7 @@ function avf(num, correct, text, correctanswer, correctpos){
 }
 var sayTimeout;
 function tts(text, pitch, callback) {
-    if (speechSynthesis.speaking) {
+    /* if (speechSynthesis.speaking) {
         // SpeechSyn is currently speaking, cancel the current utterance(s)
         speechSynthesis.cancel();
 
@@ -392,7 +392,12 @@ function tts(text, pitch, callback) {
             message.onend = callback;
         }
         speechSynthesis.speak(message);
-    }
+    } */
+    setTimeout(function(){
+        if (callback) {
+            callback();
+        }
+    }, 1500);
 }
 </script>
 </html>
