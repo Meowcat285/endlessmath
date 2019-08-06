@@ -384,7 +384,7 @@ function tts(text, pitch, callback) {
         // Good to go
         var message = new SpeechSynthesisUtterance(text);
         message.lang = "en-US";
-        message.voice = window.speechSynthesis.getVoices()[0];
+        //message.voice = window.speechSynthesis.getVoices()[0];
         if (pitch) {
             message.pitch = pitch;
         }
